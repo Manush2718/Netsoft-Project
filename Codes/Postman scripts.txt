@@ -1,0 +1,20 @@
+This notepad contains the links for postman application commands for initial flows for switches 1, 2 and 3 and commands to obtain statistics. 
+
+The link provides the flows collection which can be seen on the left tab. Each one of them contains the body of that flow rule on expansion.
+
+# Switch 1 collection - 6 flow rules
+
+https://documenter.getpostman.com/view/6537911/S1EQTJMj 
+
+# Switch 2 collection - 4 flow rules
+
+https://documenter.getpostman.com/view/6537911/S1EQTJMm
+
+
+# Switch 3 collection - 4 flow rules
+
+https://documenter.getpostman.com/view/6537911/S1EQTJMn
+
+#Statistics - Port,flows, meter
+
+https://documenter.getpostman.com/view/6537911/S1EQTJS3

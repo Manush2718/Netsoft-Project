@@ -353,6 +353,70 @@ def bootVM4(vmName):
     switch2_ip.append(vm4.networks[net_name][0])
     switch2_name.append(vm4)
 
+#Boot VM for switch sw3
+
+switch3_ip = []
+switch3_name = []
+switch3_id = []
+def bootVM5(vmName):
+    assert type(vmName) in (str, unicode), "'vmName' is type %s" % type(vmName)
+
+    username = "netsoft24"
+    vmName = username + '-' + vmName
+
+    logger.info("Creating VM %s" % vmName)
+
+    username = "netsoft24"
+    password = "manush2718"
+    tenant_name = "workshop-12"
+    region_name_3 = "CORE"
+    auth_url = "http://iam.savitestbed.ca:5000/v2.0/"
+    key_name = "netsoft24key"
+    flavor = "m1.small"
+    image = "ECE1508-overlay"
+    nova3 = novaClient.Client(username, password, tenant_name, auth_url, region_name=region_name_3, no_cache=True)
+    net_name = tenant_name + "-net"
+    net = nova3.networks.find(label = net_name)
+    image = nova3.images.find(name=image)
+    flavor = nova3.flavors.find(name=flavor)
+    vm5 = nova3.servers.create(name=vmName, image=image, flavor=flavor, key_name=key_name, security_groups=['netsoft24'], nics=[{'net-id': net.id}])
+    waitUntilVMActive(vm5)
+    switch3_id.append(vm5.id)
+    switch3_ip.append(vm5.networks[net_name][0])
+    switch3_name.append(vm5)
+
+#Boot VM for host h3
+
+host3_ip = []
+host3_name = []
+host3_id = []
+def bootVM6(vmName):
+    assert type(vmName) in (str, unicode), "'vmName' is type %s" % type(vmName)
+
+    username = "netsoft24"
+    vmName = username + '-' + vmName
+
+    logger.info("Creating VM %s" % vmName)
+
+    username = "netsoft24"
+    password = "manush2718"
+    tenant_name = "workshop-12"
+    region_name_3 = "CORE"
+    auth_url = "http://iam.savitestbed.ca:5000/v2.0/"
+    key_name = "netsoft24key"
+    flavor = "m1.small"
+    image = "ECE1508-overlay"
+    nova3 = novaClient.Client(username, password, tenant_name, auth_url, region_name=region_name_3, no_cache=True)
+    net_name = tenant_name + "-net"
+    net = nova3.networks.find(label = net_name)
+    image = nova3.images.find(name=image)
+    flavor = nova3.flavors.find(name=flavor)
+    vm6 = nova3.servers.create(name=vmName, image=image, flavor=flavor, key_name=key_name, security_groups=['netsoft24'], nics=[{'net-id': net.id}])
+    waitUntilVMActive(vm6)
+    host3_id.append(vm6.id)
+    host3_ip.append(vm6.networks[net_name][0])
+    host3_name.append(vm6)
+
 
 def setOverlayInterfaceHost1(hostVMObj, hostOverlayIP):
     tenant_name = "workshop-12"
@@ -395,6 +459,26 @@ def setOverlayInterfaceHost2(hostVMObj, hostOverlayIP):
     runCommandOverSSH(hostSSH, h2internal)
     runCommandOverSSH(hostSSH, h2OverlayIPassign)
 
+def setOverlayInterfaceHost3(hostVMObj, hostOverlayIP):
+    tenant_name = "workshop-12"
+    logger.info("Setting overlay for %s with IP %s" %
+                        (hostVMObj.name, hostOverlayIP))
+    networkName = tenant_name + '-net'
+
+    hostVMIP = hostVMObj.networks.get(networkName)[0]
+    hostSSH = getSSHSession(hostVMIP, 'ubuntu', 'savi')
+
+    # Ensure OVS daemon is up and running
+    waitUntilOVSActive(hostSSH)
+
+    h3bridge = "sudo ovs-vsctl --may-exist add-br h3-br"
+    h3bridgeproto = "sudo ovs-vsctl set bridge h3-br protocols=OpenFlow10"
+    h3internal = "sudo ovs-vsctl --may-exist add-port h3-br h3-internal -- set interface h3-internal type=internal"
+    h3OverlayIPassign = "sudo ifconfig h3-internal "+hostOverlayIP+"/24 mtu 1450 up"
+    runCommandOverSSH(hostSSH, h3bridge)
+    runCommandOverSSH(hostSSH, h3bridgeproto)
+    runCommandOverSSH(hostSSH, h3internal)
+    runCommandOverSSH(hostSSH, h3OverlayIPassign)
 
 ip_h1 = host1_ip
 ip_h2 = host2_ip
@@ -402,10 +486,11 @@ ip_h3 = host3_ip
 ip_sw1 = switch1_ip
 ip_sw2 = switch2_ip
 ip_sw3 = switch3_ip
-ip_sw4 = switch4_ip
 VNI_1 = []
 VNI_2 = []
 VNI_3 = []
+VNI_4 = []
+VNI_5 = []
 
 def connectNodes_h1_sw1(node1, node2):
     tenant_name = "workshop-12"
@@ -482,6 +567,53 @@ def connectNodes_sw2_h2(node1, node2):
     runCommandOverSSH(node1SSH, sw2_h2_vxlaninterface)
     runCommandOverSSH(node2SSH, h2_sw2_vxlaninterface)
 
+def connectNodes_sw1_sw3(node1, node2):
+    tenant_name = "workshop-12"
+    logger.info("Making VXLAN links between %s and %s" % (node1.name, node2.name))
+    networkName = tenant_name + '-net'
+
+    node1IP = node1.networks.get(networkName)[0]
+    node1SSH = getSSHSession(node1IP, 'ubuntu', 'savi')
+
+    node2IP = node2.networks.get(networkName)[0]
+    node2SSH = getSSHSession(node2IP, 'ubuntu', 'savi')
+
+    # Ensure OVS daemon is up and running in both nodes
+    waitUntilOVSActive(node1SSH)
+    waitUntilOVSActive(node2SSH)
+
+    VNI_4 = generateVNI()
+    sw3bridge = "sudo ovs-vsctl add-br sw3-br"
+    sw3bridgeproto = "sudo ovs-vsctl set bridge sw3-br protocols=OpenFlow10"
+    sw3internal = "sudo ovs-vsctl add-port sw3-br sw3-internal -- set interface sw3-internal type=internal"
+    sw1_sw3_vxlaninterface = "sudo ovs-vsctl add-port sw1-br sw1-vxlan3 -- set interface sw1-vxlan3 type=vxlan options:remote_ip=%s options:key=%s" % (ip_sw3[0], VNI_4)
+    sw3_sw1_vxlaninterface = "sudo ovs-vsctl add-port sw3-br sw3-vxlan1 -- set interface sw3-vxlan1 type=vxlan options:remote_ip=%s  options:key=%s" % (ip_sw1[0], VNI_4)
+    runCommandOverSSH(node2SSH, sw3bridge)
+    runCommandOverSSH(node2SSH, sw3bridgeproto)
+    runCommandOverSSH(node2SSH, sw3internal)
+    runCommandOverSSH(node2SSH, sw3_sw1_vxlaninterface)
+    runCommandOverSSH(node1SSH, sw1_sw3_vxlaninterface)
+
+def connectNodes_sw3_h3(node1, node2):
+    tenant_name = "workshop-12"
+    logger.info("Making VXLAN links between %s and %s" % (node1.name, node2.name))
+    networkName = tenant_name + '-net'
+    node1IP = node1.networks.get(networkName)[0]
+    node1SSH = getSSHSession(node1IP, 'ubuntu', 'savi')
+
+    node2IP = node2.networks.get(networkName)[0]
+    node2SSH = getSSHSession(node2IP, 'ubuntu', 'savi')
+
+    # Ensure OVS daemon is up and running in both nodes
+    waitUntilOVSActive(node1SSH)
+    waitUntilOVSActive(node2SSH)
+
+    VNI_5 = generateVNI()
+    sw3_h3_vxlaninterface = "sudo ovs-vsctl add-port sw3-br sw3-vxlan2 -- set interface sw3-vxlan2 type=vxlan options:remote_ip=%s options:key=%s" % (ip_h3[0], VNI_5)
+    h3_sw3_vxlaninterface = "sudo ovs-vsctl add-port h3-br h3-vxlan -- set interface h3-vxlan type=vxlan options:remote_ip=%s  options:key=%s" % (ip_sw3[0], VNI_5)
+    runCommandOverSSH(node1SSH, sw3_h3_vxlaninterface)
+    runCommandOverSSH(node2SSH, h3_sw3_vxlaninterface)
+
 
 def deployOverlay():
     print "In deployOverlay()"
@@ -494,17 +626,22 @@ def deployOverlay():
     bootVM2("h2-VTN")
     bootVM3("sw1-VTN")
     bootVM4("sw2-VTN")
+    bootVM5("sw3-VTN")
+    bootVM6("h3-VTN")
     setOverlayInterfaceHost1(host1_name[0], '192.168.200.27')
     setOverlayInterfaceHost2(host2_name[0], '192.168.200.31')
+    setOverlayInterfaceHost3(host3_name[0], '192.168.200.41')
     connectNodes_h1_sw1(host1_name[0], switch1_name[0])
     connectNodes_sw1_sw2(switch1_name[0], switch2_name[0])
     connectNodes_sw2_h2(switch2_name[0], host2_name[0])
+    connectNodes_sw1_sw3(switch1_name[0], switch3_name[0])
+    connectNodes_sw3_h3(switch3_name[0], host3_name[0])
     ctrlEndpoint = "10.12.132.7:6633"
     setController(switch1_name[0], ctrlEndpoint)
     setController2(switch2_name[0], ctrlEndpoint)
-    
+    setController3(switch3_name[0], ctrlEndpoint)
+
 
 
 if __name__ == "__main__":
     deployOverlay()
-

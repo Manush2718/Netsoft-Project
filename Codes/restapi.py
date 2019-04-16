@@ -4,19 +4,19 @@ import json
 import httplib2
 
 # URL for Switch-3 Port-2 statistics
-Port2_Stat_SW3_Url = 'http://142.150.208.228:8181/restconf/operational/opendaylight-inventory:nodes/node/openflow:86126267218505/node-connector/openflow:86126267218505:2'
+Port2_Stat_SW3_Url = 'http://142.150.208.228:8181/restconf/operational/opendaylight-inventory:nodes/node/openflow:244248228942660/node-connector/openflow:244248228942660:2'
 
 # URLs for injecting 1 new flow in switch 1, 2 new flow in switch 3, 3 new flows in switch 2 and 4 new flows in switch 4
-SW3_new_flow1 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:86126267218505/table/4/flow/5'
-SW3_new_flow2 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:86126267218505/table/4/flow/6'
-SW2_new_flow1 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:261711686589256/table/5/flow/5'
-SW2_new_flow2 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:261711686589256/table/5/flow/6'
-SW2_new_flow3 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:261711686589256/table/5/flow/7'
-SW4_new_flow1 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:266350964029250/table/6/flow/1'
-SW4_new_flow2 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:266350964029250/table/6/flow/2'
-SW4_new_flow3 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:266350964029250/table/6/flow/3'
-SW4_new_flow4 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:266350964029250/table/6/flow/4'
-SW1_new_flow1 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:266874693210436/table/7/flow/7'
+SW3_new_flow1 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:244248228942660/table/4/flow/5'
+SW3_new_flow2 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:244248228942660/table/4/flow/6'
+SW2_new_flow1 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:261913684036174/table/5/flow/5'
+SW2_new_flow2 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:261913684036174/table/5/flow/6'
+SW2_new_flow3 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:261913684036174/table/5/flow/7'
+SW4_new_flow1 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:50957639867970/table/6/flow/1'
+SW4_new_flow2 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:50957639867970/table/6/flow/2'
+SW4_new_flow3 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:50957639867970/table/6/flow/3'
+SW4_new_flow4 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:50957639867970/table/6/flow/4'
+SW1_new_flow1 = 'http://142.150.208.228:8181/restconf/config/opendaylight-inventory:nodes/node/openflow:77023460469323/table/7/flow/7'
 
 h = httplib2.Http(".cache")
 h.add_credentials('admin', 'admin')
@@ -464,7 +464,7 @@ def del_sw2_flow1():
 
 def del_sw2_flow2():
     resp, content = h.request(
-        uri = SW2_new_flow3,
+        uri = SW2_new_flow2,
         method = "DELETE"
         )
     return resp, content
